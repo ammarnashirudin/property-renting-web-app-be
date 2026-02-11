@@ -1,10 +1,13 @@
 import { Request, Response, NextFunction } from "express";
 import { roomManagementService } from "../services/roomManagement.service";
-
+import { createCustomError } from "@/utils/customError";
 export const roomManagementController = {
   createRoom: async (req: Request, res: Response, next: NextFunction) => {
     try {
       const propertyId = Number(req.params.propertyId);
+      if(isNaN(propertyId)){
+        throw createCustomError(400, "Property ID tidak valid");
+      }
       const result = await roomManagementService.createRoom(propertyId, req.body);
       res.status(201).json({ message: "OK", data: result });
     } catch (err) {
@@ -31,6 +34,17 @@ export const roomManagementController = {
       next(err);
     }
   },
+
+  getRoomById: async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const roomId = Number(req.params.roomId);
+      const data = await roomManagementService.getRoomById(roomId);
+      res.json({ message: "OK", data });
+    } catch (err) {
+      next(err);
+    }
+  },
+
 
   setAvailability: async (req: Request, res: Response, next: NextFunction) => {
     try {

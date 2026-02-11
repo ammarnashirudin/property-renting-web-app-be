@@ -41,4 +41,13 @@ propertyManagementRouter.delete(
   propertyManagementController.remove
 );
 
+propertyManagementRouter.get(
+  "/:id",
+  authMiddleware,
+  authGuard,
+  roleMiddleware(["TENANT"]),
+  propertyManagementController.detail
+);
+
+
 export default propertyManagementRouter;

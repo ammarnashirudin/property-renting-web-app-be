@@ -22,6 +22,13 @@ export const propertyManagementService = {
     });
   },
 
+  detail: async (propertyId: number, tenantId: number) => {
+    const property = await propertyManagementRepository.findById(propertyId);
+    if (!property) throw createCustomError(404, "Property tidak ditemukan");
+    if (property.tenantId !== tenantId) throw createCustomError(403, "Forbidden");
+    return property;
+  },
+
   update: async (propertyId: number, tenantId: number, payload: any, file?: Express.Multer.File) => {
     const property = await propertyManagementRepository.findById(propertyId);
     if (!property) throw createCustomError(404, "Property tidak ditemukan");

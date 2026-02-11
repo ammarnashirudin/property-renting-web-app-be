@@ -7,6 +7,7 @@ export type JwtPayloadUser = {
   id: number;
   email: string;
   role: "USER" | "TENANT";
+  isVerified : boolean;
 };
 
 export function authMiddleware(req: any, res: Response, next: NextFunction) {

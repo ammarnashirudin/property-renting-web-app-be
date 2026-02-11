@@ -2,8 +2,17 @@ import prisma from "../lib/prisma";
 
 export const availabilityRepository = {
   set: async (roomId: number, date: Date, isAvailable: boolean) => {
+    const normalized = new Date(
+      date.getFullYear(),
+      date.getMonth(),
+      date.getDate()
+    );
+
     const exist = await prisma.roomAvailability.findFirst({
-      where: { roomId, date },
+      where: {
+        roomId,
+        date: normalized,
+      },
     });
 
     if (exist) {
@@ -14,7 +23,12 @@ export const availabilityRepository = {
     }
 
     return prisma.roomAvailability.create({
-      data: { roomId, date, isAvailable },
+     data: {
+        roomId,
+        date: normalized,
+        isAvailable,
+      },
     });
   },
+
 };

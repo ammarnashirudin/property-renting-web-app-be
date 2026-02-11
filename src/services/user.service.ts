@@ -53,17 +53,12 @@ export const userService = {
     const exist = await userRepository.findByEmail(newEmail);
     if (exist) throw createCustomError(400, "Email sudah digunakan user lain");
 
-    const user = await userRepository.findById(userId);
-    if (!user) throw createCustomError(404, "User tidak ditemukan");
-
-  
     await userRepository.updateUser(userId, {
       email: newEmail,
       isVerified: false,
     });
-
         
-    await authService.resendVerificationByEmail(newEmail);
+    await authService.sendVerificationByUserId(userId);
 
     return { message: "Email berhasil diupdate, silakan verifikasi ulang" };
   },

@@ -20,6 +20,10 @@ export const roomManagementService = {
     });
   },
 
+  getRoomById: (roomId: number) =>
+  roomRepository.findById(roomId),
+
+
   updateRoom: async (roomId: number, payload: any) => {
     return roomRepository.update(roomId, {
       name: payload.name,

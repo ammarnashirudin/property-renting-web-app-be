@@ -62,5 +62,14 @@ roomManagementRouter.get(
   roomManagementController.listPeakRates
 );
 
+roomManagementRouter.get(
+  "/:roomId",
+  authMiddleware,
+  authGuard,
+  roleMiddleware(["TENANT"]),
+  roomManagementController.getRoomById
+);
+
+
 
 export default roomManagementRouter;

@@ -9,8 +9,6 @@ import { sendMail } from "./email.service";
 import { APP_BASE_URL } from "../configs/env.configs";
 import { createCustomError } from "../utils/customError";
 import { OAuth2Client } from "google-auth-library";
-import { use } from "react";
-
 
 function generateRandomToken() {
   return crypto.randomBytes(32).toString("hex");
@@ -91,12 +89,9 @@ export const authService = {
     return { message: "Registrasi tenant berhasil, cek email untuk verifikasi" };
   },
 
-  async resendVerificationByEmail(email: string) {
-    const user = await userRepository.findByEmail(email);
+  async sendVerificationByUserId(userId: number) {
+    const user = await userRepository.findById(userId);
     if (!user) throw createCustomError(404, "User tidak ditemukan");
-
-    if (user.isVerified)
-      throw createCustomError(400, "User sudah terverifikasi");
 
     await emailTokenRepository.invalidateAllUserTokens(user.id);
 
@@ -117,7 +112,6 @@ export const authService = {
       verifyUrl,
     });
   },
-
 
   async verifyEmailAndSetPassword(body: { token: string; password: string }) {
     const tokenData = await emailTokenRepository.findValidToken(body.token);
@@ -144,7 +138,9 @@ export const authService = {
 
     await emailTokenRepository.markUsed(tokenData.id);
 
-    return { message: "Verifikasi berhasil, silakan login kembali" };
+    return { 
+      message: "Verifikasi berhasil, silakan login kembali",
+      role: user.role, };
   },
 
   async login(body: { email: string; password: string }) {
@@ -159,7 +155,7 @@ export const authService = {
     if (!user.isVerified) throw createCustomError(403, "Akun belum terverifikasi");
 
     const token = generateToken(
-      { id: user.id, role: user.role, email: user.email },
+      { id: user.id, role: user.role, email: user.email, isVerified: user.isVerified },
       "7d"
     );
 
@@ -200,7 +196,7 @@ export const authService = {
       expiresAt,
     });
 
-    const resetUrl = `${APP_BASE_URL}/reset-password-confirm?token=${token}`;
+    const resetUrl = `${APP_BASE_URL}/Reset-Password-Confirm?token=${token}`;
 
     await sendMail(user.email, "Reset Password", "reset-password", {
       resetUrl,
@@ -285,14 +281,15 @@ export const authService = {
   }
 
   const token = generateToken(
-    { id: user.id, role: user.role, email: user.email },
-    "1d"
+    { id: user.id, role: user.role, email: user.email, isVerified: user.isVerified },
+    "7d"
   );
 
   return {
     message: "Social login berhasil",
     token,
     role: user.role,
+    isVerified: true,
   };
 }
 

@@ -29,7 +29,7 @@ export const userRepository = {
         provider: data.provider ?? null,
         providerAccountId: data.providerAccountId ?? null,
         profileImage: data.profileImage ?? null,
-        isVerified: data.provider ? true : false, 
+        isVerified: data.provider ==="GOOGLE", 
       },
     });
   },

@@ -20,3 +20,10 @@ export async function verifiedMiddleware(req: any, res: Response, next: NextFunc
     next(err);
   }
 }
+
+export function verifiedOnly(req: any, res: Response, next: NextFunction) {
+  if (!req.user?.isVerified) {
+    return res.status(403).json({ message: "Akun belum terverifikasi" });
+  }
+  next();
+}

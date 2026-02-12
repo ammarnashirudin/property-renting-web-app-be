@@ -14,6 +14,7 @@ import roomManagementRouter from "./routers/roomManagement.router";
 import locationRouter from "./routers/location.router";
 import orderRouter from './routers/order.router';
 
+import { orderRepository } from './repositories/order.repository';
 
 import { PORT } from "./configs/env.configs";
 
@@ -72,5 +73,18 @@ app.listen(PORT, () => {
 });
 
 
+// cancel expired orders every 5 minutes
+setInterval(async () => {
+  try {
+    await orderRepository.cancelExpiredOrders();
+    console.log('Checked for expired orders');
+  } catch (error) {
+    console.error('Error cancelling expired orders:', error);
+  }
+}, 5 * 60 * 1000); // every 5 minutes
 
+// run once at startup
+orderRepository.cancelExpiredOrders().then(result => {
+  console.log('Initial expired orders check completed');
+});
 

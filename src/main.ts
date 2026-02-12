@@ -12,6 +12,8 @@ import propertyCatalogRouter from "./routers/propertyCatalog.router";
 import propertyManagementRouter from "./routers/propertyManagement.router";
 import roomManagementRouter from "./routers/roomManagement.router";
 import locationRouter from "./routers/location.router";
+import orderRouter from './routers/order.router';
+
 
 import { PORT } from "./configs/env.configs";
 
@@ -38,12 +40,32 @@ app.use("/tenant/properties", propertyManagementRouter);
 app.use("/tenant/rooms", roomManagementRouter);
 
 app.use("/locations", locationRouter);
+
+
+//orders routes
+app.use('/orders', orderRouter);
+
+
 //error Middlewares
 app.use(errorMiddleware);
 
 
 // Start the server
 console.log("MAU LISTEN...");
+
+app.get('/', (req, res) => {
+  res.json({ 
+    message: 'Property Rental API is running',
+    endpoints: {
+      auth: '/auth',
+      users: '/user',
+      properties: '/properties',
+      tenant: '/tenant/properties'
+    }
+  });
+});
+
+
 
 app.listen(PORT, () => {
   console.log("SERVER RUNNING ON", PORT);

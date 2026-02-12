@@ -3,7 +3,7 @@ import { propertyManagementController } from "../controllers/propertyManagement.
 import { authMiddleware } from "../middlewares/auth.middleware";
 import { authGuard } from "../middlewares/authGuard";
 import { roleMiddleware } from "../middlewares/role.middleware";
-import { upload } from "../middlewares/uploud.middleware"
+import upload from "../middlewares/uploud.middleware"
 
 const propertyManagementRouter = Router();
 

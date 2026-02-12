@@ -1,8 +1,8 @@
 import { Router } from "express";
 import { userController } from "../controllers/user.controllers";
 import { authMiddleware } from "../middlewares/auth.middleware";
-import { upload } from "../middlewares/uploud.middleware";
 import { authGuard } from "../middlewares/authGuard";
+import upload from "../middlewares/uploud.middleware";
 
 const userRouter = Router();
 

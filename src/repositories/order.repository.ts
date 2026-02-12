@@ -287,4 +287,87 @@ export const orderRepository = {
       },
     });
   },
+
+  //reminder day-1 before check-in
+  async sendH1Reminders() {
+    try {
+      // H-1 sebelum check-in
+      const tomorrow = new Date();
+      tomorrow.setDate(tomorrow.getDate() + 1);
+      tomorrow.setHours(0, 0, 0, 0);
+
+      const nextDay = new Date(tomorrow);
+      nextDay.setDate(nextDay.getDate() + 1);
+
+      const orders = await prisma.order.findMany({
+        where: {
+          status: "confirmed",
+          checkIn: {
+            gte: tomorrow,
+            lt: nextDay,
+          },
+        },
+        include: {
+          user: true,
+          room: {
+            include: {
+              property: {
+                include: {
+                  tenant: {
+                    include: {
+                      user: true,
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      });
+
+      console.log(`[Reminder] Found ${orders.length} orders for H-1 reminder`);
+
+      for (const order of orders) {
+        // send email to user/guest
+        await sendMail(
+          order.user.email,
+          "Pengingat Check-in Besok!",
+          "checkin-reminder",
+          {
+            name: order.user.name,
+            propertyName: order.room.property.name,
+            address: order.room.property.address,
+            roomName: order.room.name,
+            checkIn: order.checkIn,
+            checkOut: order.checkOut,
+            totalPrice: order.totalPrice,
+            tenantName: order.room.property.tenant.user.name,
+            tenantPhone: order.room.property.tenant.phoneNumber,
+            rules:
+              "Check-in setelah jam 14.00 WIB\nCheck-out sebelum jam 12.00 WIB\nDilarang membawa hewan peliharaan\nDilarang merokok di dalam ruangan",
+          },
+        );
+
+        // send email to tenant
+        await sendMail(
+          order.room.property.tenant.user.email,
+          "Pengingat Check-in Tamu Besok",
+          "host-checkin-reminder",
+          {
+            hostName: order.room.property.tenant.user.name,
+            guestName: order.user.name,
+            propertyName: order.room.property.name,
+            roomName: order.room.name,
+            checkIn: order.checkIn,
+            checkOut: order.checkOut,
+          },
+        );
+      }
+
+      return orders;
+    } catch (error) {
+      console.error("[Reminder Error]", error);
+      return [];
+    }
+  },
 };

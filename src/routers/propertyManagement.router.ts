@@ -20,7 +20,7 @@ propertyManagementRouter.post(
   authMiddleware,
   authGuard,
   roleMiddleware(["TENANT"]),
-  upload.single("image"),
+  upload.array("image", 5),
   propertyManagementController.create
 );
 
@@ -29,7 +29,7 @@ propertyManagementRouter.patch(
   authMiddleware,
   authGuard,
   roleMiddleware(["TENANT"]),
-  upload.single("image"),
+  upload.array("image", 5),
   propertyManagementController.update
 );
 
@@ -40,5 +40,14 @@ propertyManagementRouter.delete(
   roleMiddleware(["TENANT"]),
   propertyManagementController.remove
 );
+
+propertyManagementRouter.get(
+  "/:id",
+  authMiddleware,
+  authGuard,
+  roleMiddleware(["TENANT"]),
+  propertyManagementController.detail
+);
+
 
 export default propertyManagementRouter;

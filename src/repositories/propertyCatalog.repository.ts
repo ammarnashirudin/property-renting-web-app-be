@@ -43,10 +43,16 @@ export const propertyCatalogRepository = {
       where: { id },
       include: {
         category: true,
+        images: true, 
         rooms: {
-          include: { availabilities: true, peakRates: true },
+          include: {
+            availabilities: true,
+            peakRates: true,
+          },
         },
       },
     });
-  },
+  }
+
+
 };

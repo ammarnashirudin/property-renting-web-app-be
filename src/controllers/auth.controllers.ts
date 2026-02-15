@@ -1,8 +1,6 @@
 import { Request, Response, NextFunction } from "express";
 import { authService } from "../services/auth.service";
 
-
-
 export const authController = {
   
   registerUser: async (req: Request, res: Response, next: NextFunction) => {
@@ -27,7 +25,7 @@ export const authController = {
 
   resendVerification: async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const result = await authService.resendVerificationByEmail(req.body.email);
+      const result = await authService.sendVerificationByUserId(req.body.userId);
       res.status(200).json(result);
     } catch (err) {
       next(err);

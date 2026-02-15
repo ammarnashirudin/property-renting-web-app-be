@@ -90,12 +90,9 @@ export const authService = {
     return { message: "Registrasi tenant berhasil, cek email untuk verifikasi" };
   },
 
-  async resendVerificationByEmail(email: string) {
-    const user = await userRepository.findByEmail(email);
+  async sendVerificationByUserId(userId: number) {
+    const user = await userRepository.findById(userId);
     if (!user) throw createCustomError(404, "User tidak ditemukan");
-
-    if (user.isVerified)
-      throw createCustomError(400, "User sudah terverifikasi");
 
     await emailTokenRepository.invalidateAllUserTokens(user.id);
 
@@ -116,7 +113,6 @@ export const authService = {
       verifyUrl,
     });
   },
-
 
   async verifyEmailAndSetPassword(body: { token: string; password: string }) {
   console.log("VERIFY BODY:", body);
@@ -171,7 +167,7 @@ export const authService = {
     if (!user.isVerified) throw createCustomError(403, "Akun belum terverifikasi");
 
     const token = generateToken(
-      { id: user.id, role: user.role, email: user.email },
+      { id: user.id, role: user.role, email: user.email, isVerified: user.isVerified },
       "7d"
     );
 
@@ -309,8 +305,8 @@ if (user) {
 
   
   const token = generateToken(
-    { id: user.id, role: user.role, email: user.email },
-    "1d"
+    { id: user.id, role: user.role, email: user.email, isVerified: user.isVerified },
+    "7d"
   );
 
   return {

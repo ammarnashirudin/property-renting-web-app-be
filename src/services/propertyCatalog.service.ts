@@ -74,7 +74,10 @@ export const propertyCatalogService = {
       where,
       skip,
       take: limit,
-      orderBy: { name: query.sortOrder || "asc" },
+      orderBy:
+        query.sortBy === "price"
+          ? undefined
+          : { name: query.sortOrder || "asc" },
       latitude : query.latitude,
       longitude : query.longitude,
     });

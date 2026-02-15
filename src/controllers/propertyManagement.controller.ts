@@ -11,6 +11,18 @@ export const propertyManagementController = {
     }
   },
 
+  detail: async (req: any, res: Response, next: NextFunction) => {
+    try {
+      const result = await propertyManagementService.detail(
+        Number(req.params.id),
+        req.user.id
+      );
+      res.json({ message: "OK", data: result });
+    } catch (err) {
+      next(err);
+    }
+  },
+
   create: async (req: any, res: Response, next: NextFunction) => {
     try {
       const result = await propertyManagementService.create(

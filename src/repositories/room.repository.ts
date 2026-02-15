@@ -1,8 +1,25 @@
 import prisma from "../lib/prisma";
 
 export const roomRepository = {
-  create: (payload: any) => prisma.room.create({ data: payload }),
+  create: (payload: any) => {
+    const { propertyId, ...rest } = payload;
 
+    console.log("PROPERTY ID:", propertyId);
+
+    if (!propertyId || isNaN(propertyId)) {
+      throw new Error("Invalid propertyId");
+    }
+
+    return prisma.room.create({
+      data: {
+        ...rest,
+        property: {
+          connect: { id: propertyId },
+        },
+      },
+    });
+  },
+  
   update: (id: number, payload: any) =>
     prisma.room.update({ where: { id }, data: payload }),
 

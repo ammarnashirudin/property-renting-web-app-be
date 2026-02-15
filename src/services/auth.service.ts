@@ -10,6 +10,7 @@ import { APP_BASE_URL } from "../configs/env.configs";
 import { createCustomError } from "../utils/customError";
 import { OAuth2Client } from "google-auth-library";
 
+
 function generateRandomToken() {
   return crypto.randomBytes(32).toString("hex");
 }
@@ -114,34 +115,45 @@ export const authService = {
   },
 
   async verifyEmailAndSetPassword(body: { token: string; password: string }) {
-    const tokenData = await emailTokenRepository.findValidToken(body.token);
-
-    if (!tokenData) throw createCustomError(400, "Token tidak valid");
-    if (tokenData.used) throw createCustomError(400, "Token sudah digunakan");
-    if (!tokenData.expiresAt || tokenData.expiresAt < new Date())
-      throw createCustomError(400, "Token sudah expired");
-
-    const user = tokenData.user;
-    if (user.isVerified) throw createCustomError(400, "User sudah terverifikasi");
-
-    const salt = genSaltSync(10);
-    const hashed = hashSync(body.password, salt);
-    
-    if (!body.password || body.password.length < 8) {
-    throw createCustomError(400, "Password minimal 8 karakter");}
-
-    await userRepository.updateUser(user.id, {
-      password: hashed,
-      isVerified: true,
-    });
+  console.log("VERIFY BODY:", body);
 
 
-    await emailTokenRepository.markUsed(tokenData.id);
+  if (!body.password || body.password.length < 8) {
+    throw createCustomError(400, "Password minimal 8 karakter");
+  }
 
-    return { 
-      message: "Verifikasi berhasil, silakan login kembali",
-      role: user.role, };
-  },
+
+  const tokenData = await emailTokenRepository.findValidToken(body.token);
+  console.log("TOKEN DATA:", tokenData);
+
+  if (!tokenData) {
+    throw createCustomError(400, "Token tidak valid atau expired");
+  }
+
+  const user = tokenData.user;
+
+
+  if (user.isVerified) {
+    throw createCustomError(400, "User sudah terverifikasi");
+  }
+
+
+  const hashedPassword = hashSync(body.password, genSaltSync(10));
+
+
+  await userRepository.updateUser(user.id, {
+    password: hashedPassword,
+    isVerified: true,
+  });
+
+
+  await emailTokenRepository.markUsed(tokenData.id);
+
+  return {
+    message: "Email berhasil diverifikasi dan password berhasil diset",
+  };
+},
+
 
   async login(body: { email: string; password: string }) {
     const user = await userRepository.findByEmail(body.email);
@@ -228,18 +240,18 @@ export const authService = {
   },
 
   async socialAuth(body: {
-    role: "USER" | "TENANT";
-    provider: "google" | "facebook";
-    token : string;
-  }) {
-    console.log("data masuk auth.service");
-    console.log(body);
-    
-    
+  role: "USER" | "TENANT";
+  provider: "google" | "facebook";
+  token: string;
+}) {
+  console.log("data masuk auth.service (socialAuth)");
+  console.log(body);
+
   let email: string;
   let name: string;
   let profileImage: string | undefined;
   let providerAccountId: string | undefined;
+
 
   if (body.provider === "google") {
     const ticket = await googleClient.verifyIdToken({
@@ -255,22 +267,22 @@ export const authService = {
     email = payload.email;
     name = payload.name || "Google User";
     profileImage = payload.picture;
-    providerAccountId = payload.sub
+    providerAccountId = payload.sub;
   } else {
     throw createCustomError(400, "Provider not supported");
   }
 
-  let user = await userRepository.findByEmail(email);
+  
+ let user = await userRepository.findByEmail(email);
 
-  if (!user) {
-    user = await userRepository.createUser({
-      role: body.role,
-      name,
-      email,
-      provider: body.provider.toUpperCase(),
-      providerAccountId,
-      profileImage,
-    });
+if (user) {
+ 
+  if (user.provider === "EMAIL") {
+    user = await userRepository.linkGoogleAccount(
+      user.id,
+      providerAccountId!,
+      profileImage
+    );
   }
 
   if (user.role !== body.role) {
@@ -279,7 +291,19 @@ export const authService = {
       `Email ini sudah terdaftar sebagai ${user.role}`
     );
   }
+} else {
+  user = await userRepository.createUser({
+    role: body.role,
+    name,
+    email,
+    provider: "GOOGLE",
+    providerAccountId,
+    profileImage,
+  });
+}
 
+
+  
   const token = generateToken(
     { id: user.id, role: user.role, email: user.email, isVerified: user.isVerified },
     "7d"
@@ -289,9 +313,10 @@ export const authService = {
     message: "Social login berhasil",
     token,
     role: user.role,
-    isVerified: true,
+    isVerified: true, 
   };
 }
+
 
     
 };

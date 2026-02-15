@@ -2,6 +2,7 @@ import path from "path";
 import fs from "fs";
 import handlebars from "handlebars";
 import { transporter } from "../helpers/nodemailer";
+import { GMAIL_EMAIL } from "@/configs/env.configs";
 
 export async function sendMail(
   to: string,
@@ -16,6 +17,7 @@ export async function sendMail(
   const html = compiledTemplate(data);
 
   await transporter.sendMail({
+    from: `"Property Renting" <${GMAIL_EMAIL}>`,
     to,
     subject,
     html,

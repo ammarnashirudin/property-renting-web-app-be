@@ -29,7 +29,8 @@ export const userRepository = {
         provider: data.provider ?? null,
         providerAccountId: data.providerAccountId ?? null,
         profileImage: data.profileImage ?? null,
-        isVerified: data.provider ? true : false, 
+        isVerified: data.provider === "GOOGLE" ? true : false,
+
       },
     });
   },
@@ -40,5 +41,22 @@ export const userRepository = {
       data,
     });
   },
+
+  linkGoogleAccount(
+  userId: number,
+  providerAccountId: string,
+  profileImage?: string
+) {
+  return prisma.user.update({
+    where: { id: userId },
+    data: {
+      provider: "GOOGLE",
+      providerAccountId,
+      profileImage,
+      isVerified: true,
+    },
+  });
+},
+
 };
 

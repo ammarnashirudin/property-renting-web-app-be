@@ -20,7 +20,7 @@ propertyManagementRouter.post(
   authMiddleware,
   authGuard,
   roleMiddleware(["TENANT"]),
-  upload.array("image", 5),
+  upload.single("picture"),
   propertyManagementController.create
 );
 

@@ -19,6 +19,9 @@ export const propertyManagementService = {
       description: payload.description,
       address: payload.address,
       image: upload.secure_url,
+      latitude: Number(payload.latitude),
+      longitude: Number(payload.longitude),
+
     });
   },
 
